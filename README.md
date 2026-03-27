@@ -1,9 +1,11 @@
 # Monster Hunter Now Scraper
 
-A [Scrapy](https://scrapy.org/) project that scrapes all four data categories from [monsterhunternow.com](https://monsterhunternow.com):
+A [Scrapy](https://scrapy.org/) project that scrapes all four data categories
+from [monsterhunternow.com](https://monsterhunternow.com):
 
 - **Monsters** — stats, weaknesses, habitats, breakable parts, and materials
-- **Weapons** — all weapon types with full upgrade grade/level attack, element, and skill data
+- **Weapons** — all weapon types with full upgrade grade/level attack, element,
+  and skill data
 - **Armor** — all armor pieces with per-grade defense values and skills
 - **Skills** — all skills with per-level descriptions and effect amounts
 
@@ -13,7 +15,11 @@ Output is a single `mhnow.json` file grouped by category.
 
 ## How it works
 
-The site uses a server-side "islands architecture" — all item data is embedded directly in the raw HTML as HTML-encoded JSON inside `<root-island props="...">` elements. No JavaScript execution or headless browser is needed; Scrapy's standard HTTP fetcher retrieves everything in **4 requests** (one per listing page).
+The site uses a server-side "islands architecture" — all item data is embedded
+directly in the raw HTML as HTML-encoded JSON inside
+`<root-island props="...">` elements. No JavaScript execution or headless
+browser is needed; Scrapy's standard HTTP fetcher retrieves everything in
+**4 requests** (one per listing page).
 
 ---
 
@@ -49,7 +55,8 @@ The site uses a server-side "islands architecture" — all item data is embedded
 
 ### Option 2 — Docker or Podman
 
-The setup script auto-detects whichever container runtime is on your `PATH` (Docker is preferred; Podman is used as a fallback).
+The setup script auto-detects whichever container runtime is on your `PATH`
+(Docker is preferred; Podman is used as a fallback).
 
 1. **Windows (PowerShell)**
 
@@ -71,7 +78,8 @@ The setup script auto-detects whichever container runtime is on your `PATH` (Doc
     ./run_scraper.sh
     ```
 
-The run scripts auto-detect which environment is available (venv takes priority over container) and use it.
+The run scripts auto-detect which environment is available (venv takes priority
+over container) and use it.
 
 ---
 
@@ -151,8 +159,8 @@ mhnow/
 ├── scrapy.cfg                # Scrapy project config
 ├── requirements.txt          # Python dependencies
 ├── Dockerfile                # Container image definition
-├── setup_dev_env.ps1         # One-time environment setup — Windows (venv or Docker/Podman)
-├── setup_dev_env.sh          # One-time environment setup — Linux/macOS (venv or Docker/Podman)
+├── setup_dev_env.ps1         # One-time environment setup — Windows
+├── setup_dev_env.sh          # One-time environment setup — Linux/macOS
 ├── run_scraper.ps1           # Run the scraper — Windows
 └── run_scraper.sh            # Run the scraper — Linux/macOS
 ```
@@ -166,8 +174,8 @@ Key settings in `mhnow_scraper/settings.py`:
 | Setting | Value | Purpose |
 | --- | --- | --- |
 | `DOWNLOAD_DELAY` | `2` s | Base delay between requests |
-| `AUTOTHROTTLE_ENABLED` | `True` | Dynamically adjusts delay based on server latency |
-| `CONCURRENT_REQUESTS_PER_DOMAIN` | `1` | Single request at a time to be polite |
+| `AUTOTHROTTLE_ENABLED` | `True` | Adjusts delay based on server latency |
+| `CONCURRENT_REQUESTS_PER_DOMAIN` | `1` | One request at a time to be polite |
 | `RETRY_TIMES` | `3` | Retry failed requests up to 3 times |
 | `ROBOTSTXT_OBEY` | `True` | Respects the site's robots.txt |
 
@@ -177,6 +185,8 @@ Key settings in `mhnow_scraper/settings.py`:
 
 To add a new data source:
 
-1. Add an entry to `LISTING_PAGES` in `mhnow_scraper/spiders/mhnow_spider.py` mapping the URL to `(category, component_name, data_key)`.
+1. Add an entry to `LISTING_PAGES` in
+   `mhnow_scraper/spiders/mhnow_spider.py` mapping the URL to
+   `(category, component_name, data_key)`.
 2. Add a `_parse_<category>` method to the spider class.
 3. Add the new category key to `_KNOWN_CATEGORIES` in `mhnow_scraper/pipelines.py`.

@@ -22,6 +22,13 @@
         .\run_scraper.ps1
 #>
 
+[CmdletBinding()]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSAvoidUsingWriteHost', '',
+    Justification = 'Interactive console script - colored output is intentional.'
+)]
+param()
+
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
@@ -37,7 +44,7 @@ function Write-Header([string]$msg) {
 }
 
 # GroupedOutputPipeline in pipelines.py writes mhnow.json directly.
-# Do NOT pass -O / -o flags here — they re-enable the flat-array FEEDS
+# Do NOT pass -O / -o flags here - they re-enable the flat-array FEEDS
 # exporter which would overwrite the grouped output.
 $scraperCommand = "scrapy crawl mhnow"
 $imageName      = "mhnow-scraper"
@@ -46,7 +53,7 @@ $venvActivate   = ".venv\Scripts\Activate.ps1"
 Write-Header "Monster Hunter Now Scraper"
 
 # ---------------------------------------------------------------------------
-# Priority 1 — Python virtual environment
+# Priority 1 - Python virtual environment
 # ---------------------------------------------------------------------------
 if (Test-Path $venvActivate) {
     Write-Host "Detected environment: Python virtual environment (.venv)" -ForegroundColor Green
@@ -63,7 +70,7 @@ if (Test-Path $venvActivate) {
 }
 
 # ---------------------------------------------------------------------------
-# Priority 2 — Docker
+# Priority 2 - Docker
 # ---------------------------------------------------------------------------
 if (Get-Command "docker" -ErrorAction SilentlyContinue) {
     # Check whether the image has been built
@@ -92,6 +99,6 @@ Write-Host "Run the setup script first to create one:" -ForegroundColor Yellow
 Write-Host "    .\setup_dev_env.ps1"
 Write-Host ""
 Write-Host "The setup script will guide you through creating either:"
-Write-Host "  • A Python virtual environment (.venv)"
-Write-Host "  • A Docker container image ($imageName)"
+Write-Host "  * A Python virtual environment (.venv)"
+Write-Host "  * A Docker container image ($imageName)"
 exit 1

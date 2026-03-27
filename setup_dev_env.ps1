@@ -4,8 +4,8 @@
 
 .DESCRIPTION
     Prompts the user to choose between:
-      1) Python virtual environment (.venv) — local, no extra software needed
-      2) Docker container               — completely isolated from the host OS
+      1) Python virtual environment (.venv) - local, no extra software needed
+      2) Docker container               - completely isolated from the host OS
 
     Both options install all dependencies declared in requirements.txt.
 
@@ -13,6 +13,13 @@
     Run from the project root:
         .\setup_dev_env.ps1
 #>
+
+[CmdletBinding()]
+[System.Diagnostics.CodeAnalysis.SuppressMessageAttribute(
+    'PSAvoidUsingWriteHost', '',
+    Justification = 'Interactive console script - colored output is intentional.'
+)]
+param()
 
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
@@ -45,14 +52,14 @@ function Get-ContainerCLI {
 # ---------------------------------------------------------------------------
 # Banner
 # ---------------------------------------------------------------------------
-Write-Header "Monster Hunter Now Scraper — Dev Environment Setup"
+Write-Header "Monster Hunter Now Scraper - Dev Environment Setup"
 
 # ---------------------------------------------------------------------------
 # Mode selection
 # ---------------------------------------------------------------------------
 Write-Host "Choose your development environment:" -ForegroundColor Yellow
-Write-Host "  [1]  Python virtual environment  (recommended — no extra software needed)"
-Write-Host "  [2]  Container image             (Docker or Podman — fully isolated from the host OS)"
+Write-Host "  [1]  Python virtual environment  (recommended - no extra software needed)"
+Write-Host "  [2]  Container image             (Docker or Podman - fully isolated from the host OS)"
 Write-Host ""
 
 $choice = ""
@@ -61,7 +68,7 @@ while ($choice -notin @("1", "2")) {
 }
 
 # ===========================================================================
-# MODE 1 — Python virtual environment
+# MODE 1 - Python virtual environment
 # ===========================================================================
 if ($choice -eq "1") {
     Write-Header "Setting up Python virtual environment"
@@ -80,7 +87,7 @@ if ($choice -eq "1") {
     # Create virtual environment
     $venvDir = ".venv"
     if (Test-Path $venvDir) {
-        Write-Host "Virtual environment '$venvDir' already exists — skipping creation." -ForegroundColor Yellow
+        Write-Host "Virtual environment '$venvDir' already exists - skipping creation." -ForegroundColor Yellow
     } else {
         Write-Host "Creating virtual environment at $venvDir ..."
         python -m venv $venvDir
@@ -101,12 +108,12 @@ if ($choice -eq "1") {
     Write-Host ""
     Write-Host "To run the scraper:" -ForegroundColor Yellow
     Write-Host "    .\run_scraper.ps1"
-    Write-Host "  — or directly —"
+    Write-Host "  - or directly -"
     Write-Host "    scrapy crawl mhnow -O mhnow.json"
 }
 
 # ===========================================================================
-# MODE 2 — Container (Docker or Podman)
+# MODE 2 - Container (Docker or Podman)
 # ===========================================================================
 if ($choice -eq "2") {
     Write-Header "Setting up container environment"
@@ -131,12 +138,12 @@ if ($choice -eq "2") {
 
     # Generate a minimal Dockerfile if it does not already exist
     if (Test-Path $dockerfilePath) {
-        Write-Host "Dockerfile already exists — skipping generation." -ForegroundColor Yellow
+        Write-Host "Dockerfile already exists - skipping generation." -ForegroundColor Yellow
     } else {
         Write-Host "Generating Dockerfile ..."
         $dockerfileContent = @"
 # -------------------------------------------------------
-# Monster Hunter Now Scraper — Docker image
+# Monster Hunter Now Scraper - Docker image
 # Base: official Python 3.12 slim image
 # -------------------------------------------------------
 FROM python:3.12-slim
