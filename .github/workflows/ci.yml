@@ -10,6 +10,9 @@ on:
   #   # Run daily at 06:00 UTC
   #   - cron: '0 6 * * *'
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   # ---------------------------------------------------------------------------
   # 1. Parallel linting — all four jobs run independently (no fail-fast)
@@ -19,10 +22,10 @@ jobs:
     name: Lint — Markdown (markdownlint)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Lint README.md
-        uses: DavidAnson/markdownlint-cli2-action@v17
+        uses: DavidAnson/markdownlint-cli2-action@v23
         with:
           globs: '**/*.md'
 
@@ -30,9 +33,9 @@ jobs:
     name: Lint — Python (flake8)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -49,7 +52,7 @@ jobs:
     name: Lint — Bash (shellcheck)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       # shellcheck is pre-installed on ubuntu-latest; list files explicitly
       # so the step reports all violations before exiting.
@@ -66,7 +69,7 @@ jobs:
     name: Lint — PowerShell (PSScriptAnalyzer)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Run PSScriptAnalyzer on all PowerShell scripts
         shell: pwsh
@@ -100,9 +103,9 @@ jobs:
     needs: [lint-markdown, lint-python, lint-bash, lint-powershell]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.12'
 
@@ -127,7 +130,7 @@ jobs:
           echo "mhnow.json is valid JSON."
 
       - name: Upload mhnow.json as artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mhnow-json
           path: mhnow.json
@@ -147,7 +150,7 @@ jobs:
       contents: write
     steps:
       - name: Download mhnow.json artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: mhnow-json
 
