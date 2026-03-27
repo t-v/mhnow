@@ -62,7 +62,7 @@ if (Test-Path $venvActivate) {
 
     Write-Host "Running: $scraperCommand"
     Write-Host ""
-    Invoke-Expression $scraperCommand
+    scrapy crawl mhnow
 
     Write-Host ""
     Write-Host "Done! Output written to mhnow.json" -ForegroundColor Green
