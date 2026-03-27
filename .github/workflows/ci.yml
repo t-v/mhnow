@@ -155,7 +155,7 @@ jobs:
           name: mhnow-json
 
       - name: Create GitHub Release
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v2.6.1
         with:
           tag_name: data-${{ github.run_number }}
           name: "Monster Hunter Now Data — Run #${{ github.run_number }}"
