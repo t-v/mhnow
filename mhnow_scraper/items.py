@@ -9,7 +9,8 @@ class MhnowItem(scrapy.Item):
     Add or remove fields here as the site structure becomes clearer.
     """
 
-    # Which category page this item came from (monsters / weapons / armor / skills)
+    # Which category page this item came from
+    # (monsters / weapons / armor / skills)
     category = scrapy.Field()
 
     # Canonical display name of the item
