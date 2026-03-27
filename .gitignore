@@ -54,3 +54,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Output artifact
+mhnow.json

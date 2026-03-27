@@ -1,0 +1,166 @@
+name: Monster Hunter Now — Lint, Scrape & Release
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+  # schedule:
+  #   # Run daily at 06:00 UTC
+  #   - cron: '0 6 * * *'
+
+jobs:
+  # ---------------------------------------------------------------------------
+  # 1. Parallel linting — all four jobs run independently (no fail-fast)
+  # ---------------------------------------------------------------------------
+
+  lint-markdown:
+    name: Lint — Markdown (markdownlint)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Lint README.md
+        uses: DavidAnson/markdownlint-cli2-action@v17
+        with:
+          globs: '**/*.md'
+
+  lint-python:
+    name: Lint — Python (flake8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install flake8
+        run: pip install flake8
+
+      - name: Run flake8
+        run: >
+          flake8 .
+          --max-line-length=120
+          --exclude=.venv,__pycache__
+
+  lint-bash:
+    name: Lint — Bash (shellcheck)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # shellcheck is pre-installed on ubuntu-latest; list files explicitly
+      # so the step reports all violations before exiting.
+      - name: Run shellcheck on all shell scripts
+        run: |
+          mapfile -t scripts < <(find . -maxdepth 1 -name '*.sh')
+          if [ ${#scripts[@]} -eq 0 ]; then
+            echo "No .sh files found."
+            exit 0
+          fi
+          shellcheck --severity=warning "${scripts[@]}"
+
+  lint-powershell:
+    name: Lint — PowerShell (PSScriptAnalyzer)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run PSScriptAnalyzer on all PowerShell scripts
+        shell: pwsh
+        run: |
+          Set-PSRepository -Name PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser -ErrorAction Stop
+
+          $scripts = Get-ChildItem -Filter '*.ps1' -File
+          if ($scripts.Count -eq 0) {
+            Write-Host "No .ps1 files found."
+            exit 0
+          }
+
+          $results = $scripts | ForEach-Object {
+            Invoke-ScriptAnalyzer -Path $_.FullName -Severity @('Error', 'Warning')
+          }
+
+          if ($results) {
+            $results | Format-Table -AutoSize
+            exit 1
+          }
+
+          Write-Host "PSScriptAnalyzer: no issues found."
+
+  # ---------------------------------------------------------------------------
+  # 2–4. Create venv, run scraper, validate JSON output — runs on all events
+  # ---------------------------------------------------------------------------
+
+  scrape:
+    name: Scrape & Validate JSON
+    needs: [lint-markdown, lint-python, lint-bash, lint-powershell]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Create virtual environment
+        run: python -m venv .venv
+
+      - name: Install Python dependencies
+        run: |
+          source .venv/bin/activate
+          python -m pip install --upgrade pip --quiet
+          pip install -r requirements.txt
+
+      - name: Run scraper
+        run: |
+          source .venv/bin/activate
+          scrapy crawl mhnow
+
+      - name: Validate mhnow.json with jsonlint
+        run: |
+          npm install -g jsonlint --silent
+          jsonlint --quiet mhnow.json
+          echo "mhnow.json is valid JSON."
+
+      - name: Upload mhnow.json as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: mhnow-json
+          path: mhnow.json
+          if-no-files-found: error
+
+  # ---------------------------------------------------------------------------
+  # 5. Publish mhnow.json to GitHub Releases
+  # ---------------------------------------------------------------------------
+
+  release:
+    name: Release mhnow.json
+    needs: scrape
+    runs-on: ubuntu-latest
+    # Only publish a release on direct pushes to master
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+    permissions:
+      contents: write
+    steps:
+      - name: Download mhnow.json artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: mhnow-json
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: data-${{ github.run_number }}
+          name: "Monster Hunter Now Data — Run #${{ github.run_number }}"
+          body: |
+            Automated data release produced by the scraper.
+
+            - **Trigger:** `${{ github.event_name }}`
+            - **Run:** [#${{ github.run_number }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+            - **Commit:** `${{ github.sha }}`
+          files: mhnow.json
+          make_latest: true
