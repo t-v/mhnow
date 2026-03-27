@@ -19,7 +19,7 @@ The site uses a server-side "islands architecture" — all item data is embedded
 
 ## Requirements
 
-- Python 3.12+ **or** Docker
+- Python 3.12+ **or** Docker / Podman
 
 ---
 
@@ -27,25 +27,51 @@ The site uses a server-side "islands architecture" — all item data is embedded
 
 ### Option 1 — Python virtual environment (recommended)
 
-```powershell
-# First-time setup (creates .venv and installs dependencies)
-.\setup_dev_env.ps1    # choose option 1 when prompted
+1. **Windows (PowerShell)**
 
-# Run the scraper
-.\run_scraper.ps1
-```
+    ```powershell
+    # First-time setup (creates .venv and installs dependencies)
+    .\setup_dev_env.ps1    # choose option 1 when prompted
 
-### Option 2 — Docker
+    # Run the scraper
+    .\run_scraper.ps1
+    ```
 
-```powershell
-# First-time setup (builds the Docker image)
-.\setup_dev_env.ps1    # choose option 2 when prompted
+2. **Linux / macOS**
 
-# Run the scraper
-.\run_scraper.ps1
-```
+    ```bash
+    # First-time setup (creates .venv and installs dependencies)
+    ./setup_dev_env.sh     # choose option 1 when prompted
 
-`run_scraper.ps1` auto-detects which environment is available and uses it.
+    # Run the scraper
+    ./run_scraper.sh
+    ```
+
+### Option 2 — Docker or Podman
+
+The setup script auto-detects whichever container runtime is on your `PATH` (Docker is preferred; Podman is used as a fallback).
+
+1. **Windows (PowerShell)**
+
+    ```powershell
+    # First-time setup (builds the container image)
+    .\setup_dev_env.ps1    # choose option 2 when prompted
+
+    # Run the scraper
+    .\run_scraper.ps1
+    ```
+
+2. **Linux / macOS**
+
+    ```bash
+    # First-time setup (builds the container image)
+    ./setup_dev_env.sh     # choose option 2 when prompted
+
+    # Run the scraper
+    ./run_scraper.sh
+    ```
+
+The run scripts auto-detect which environment is available (venv takes priority over container) and use it.
 
 ---
 
@@ -53,13 +79,25 @@ The site uses a server-side "islands architecture" — all item data is embedded
 
 If you prefer to run Scrapy directly:
 
-```powershell
-# Activate the venv first
-.venv\Scripts\Activate.ps1
+1. **Windows (PowerShell)**
 
-# Run the spider
-scrapy crawl mhnow
-```
+    ```powershell
+    # Activate the venv first
+    .venv\Scripts\Activate.ps1
+
+    # Run the spider
+    scrapy crawl mhnow
+    ```
+
+2. **Linux / macOS**
+
+    ```bash
+    # Activate the venv first
+    source .venv/bin/activate
+
+    # Run the spider
+    scrapy crawl mhnow
+    ```
 
 Output is written to `mhnow.json` in the project root.
 
@@ -112,9 +150,11 @@ mhnow/
 │   └── settings.py           # Scrapy settings (AutoThrottle, delays, etc.)
 ├── scrapy.cfg                # Scrapy project config
 ├── requirements.txt          # Python dependencies
-├── Dockerfile                # Docker image definition
-├── setup_dev_env.ps1         # One-time environment setup (venv or Docker)
-└── run_scraper.ps1           # Run the scraper
+├── Dockerfile                # Container image definition
+├── setup_dev_env.ps1         # One-time environment setup — Windows (venv or Docker/Podman)
+├── setup_dev_env.sh          # One-time environment setup — Linux/macOS (venv or Docker/Podman)
+├── run_scraper.ps1           # Run the scraper — Windows
+└── run_scraper.sh            # Run the scraper — Linux/macOS
 ```
 
 ---

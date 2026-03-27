@@ -35,6 +35,13 @@ function Confirm-Command([string]$cmd) {
     }
 }
 
+# Detect Docker or Podman; returns the CLI name or $null.
+function Get-ContainerCLI {
+    if (Get-Command "docker" -ErrorAction SilentlyContinue) { return "docker" }
+    if (Get-Command "podman" -ErrorAction SilentlyContinue) { return "podman" }
+    return $null
+}
+
 # ---------------------------------------------------------------------------
 # Banner
 # ---------------------------------------------------------------------------
@@ -45,7 +52,7 @@ Write-Header "Monster Hunter Now Scraper — Dev Environment Setup"
 # ---------------------------------------------------------------------------
 Write-Host "Choose your development environment:" -ForegroundColor Yellow
 Write-Host "  [1]  Python virtual environment  (recommended — no extra software needed)"
-Write-Host "  [2]  Docker container             (fully isolated from the host OS)"
+Write-Host "  [2]  Container image             (Docker or Podman — fully isolated from the host OS)"
 Write-Host ""
 
 $choice = ""
@@ -99,18 +106,23 @@ if ($choice -eq "1") {
 }
 
 # ===========================================================================
-# MODE 2 — Docker
+# MODE 2 — Container (Docker or Podman)
 # ===========================================================================
 if ($choice -eq "2") {
-    Write-Header "Setting up Docker container environment"
+    Write-Header "Setting up container environment"
 
-    Confirm-Command "docker"
+    $containerCLI = Get-ContainerCLI
+    if (-not $containerCLI) {
+        Write-Host "ERROR: Neither 'docker' nor 'podman' was found on PATH. Please install one of them first." -ForegroundColor Red
+        exit 1
+    }
+    Write-Host "Using container runtime: $containerCLI" -ForegroundColor Green
 
-    # Verify Docker daemon is running
+    # Verify the daemon / service is running
     try {
-        docker info *>$null
+        & $containerCLI info *>$null
     } catch {
-        Write-Host "ERROR: Docker daemon does not appear to be running. Start Docker Desktop and try again." -ForegroundColor Red
+        Write-Host "ERROR: '$containerCLI' does not appear to be running. Start it and try again." -ForegroundColor Red
         exit 1
     }
 
@@ -148,23 +160,23 @@ CMD ["scrapy", "crawl", "mhnow", "-O", "mhnow.json"]
         Write-Host "Dockerfile created at $dockerfilePath" -ForegroundColor Green
     }
 
-    # Build the Docker image
-    Write-Host "Building Docker image '$imageName' (this may take a minute the first time) ..."
-    docker build -t $imageName .
+    # Build the container image
+    Write-Host "Building container image '$imageName' (this may take a minute the first time) ..."
+    & $containerCLI build -t $imageName .
 
     Write-Host ""
-    Write-Host "Docker image '$imageName' built successfully!" -ForegroundColor Green
+    Write-Host "Container image '$imageName' built successfully!" -ForegroundColor Green
     Write-Host ""
     Write-Host "Useful commands:" -ForegroundColor Yellow
     Write-Host ""
     Write-Host "  Run the scraper (output saved to ./mhnow.json on the host):"
-    Write-Host "    docker run --rm -v `"${PWD}:/app`" $imageName"
+    Write-Host "    $containerCLI run --rm -v `"${PWD}:/app`" $imageName"
     Write-Host ""
     Write-Host "  Start an interactive shell inside the container for development:"
-    Write-Host "    docker run --rm -it -v `"${PWD}:/app`" $imageName bash"
+    Write-Host "    $containerCLI run --rm -it -v `"${PWD}:/app`" $imageName bash"
     Write-Host ""
     Write-Host "  Run Scrapy shell against a URL for selector testing:"
-    Write-Host "    docker run --rm -it -v `"${PWD}:/app`" $imageName scrapy shell 'https://monsterhunternow.com/en/monsters'"
+    Write-Host "    $containerCLI run --rm -it -v `"${PWD}:/app`" $imageName scrapy shell 'https://monsterhunternow.com/en/monsters'"
     Write-Host ""
     Write-Host "To run the scraper via the helper script:" -ForegroundColor Yellow
     Write-Host "    .\run_scraper.ps1"
