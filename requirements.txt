@@ -1,0 +1,13 @@
+# ============================================================
+# Monster Hunter Now Scraper — Python dependencies
+# ============================================================
+
+# Core scraping framework
+scrapy>=2.11
+
+# Required by Scrapy's built-in ItemAdapter (used in pipelines.py)
+itemadapter>=0.7
+
+# Required ONLY if you enable MhnowImagesPipeline in pipelines.py
+# (Scrapy's ImagesPipeline uses Pillow internally)
+Pillow>=10.0
